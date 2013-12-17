@@ -56,18 +56,18 @@ class Page {
             $this->page = $this->total_page >= $this->page ? $this->page : 1;
             //上一页
             $prev_url = $url_str . ($this->page - 1);
-            $page_html .= $this->page > 1 ? str_replace("%url%", $prev_url, $this->template['prev']) : "";
+            $page_html .= $this->page > 1 && isset($this->template['prev']) ? str_replace("%url%", $prev_url, $this->template['prev']) : "";
             foreach ($page_array as $p) {
                 if ($this->page == $p) {
-                    $page_html .= str_replace("%page%", $p, $this->template['focus']);
+                    $page_html .= isset($this->template['focus']) ? str_replace("%page%", $p, $this->template['focus']) : "";
                 } else {
                     $url = $url_str . $p;
-                    $page_html .= str_replace(array("%url%", "%page%"), array($url, $p), $this->template['blur']);
+                    $page_html .= isset($this->template['blur']) ? str_replace(array("%url%", "%page%"), array($url, $p), $this->template['blur']) : "";
                 }
             }
             //下一页
             $next_url = $url_str . ($this->page + 1);
-            $page_html .= $this->page < $this->total_page ? str_replace("%url%", $next_url, $this->template['next']) : "";
+            $page_html .= $this->page < $this->total_page && isset($this->template['next']) ? str_replace("%url%", $next_url, $this->template['next']) : "";
         }
         return $page_html;
     }
