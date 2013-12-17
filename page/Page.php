@@ -4,6 +4,7 @@
  * Date: 13-12-16
  * Time: 下午11:33
  * Desc: 分页类
+ * Usage: $page = new Page(100, array('a' => 1, 'b' => '2')); $page->create($current_page);
  */
 class Page {
     //当前页码
