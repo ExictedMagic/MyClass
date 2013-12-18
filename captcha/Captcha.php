@@ -23,7 +23,6 @@ class Captcha {
         $this->font = $font;
         $this->size = $size === "" ? 12 : $size;
         $this->long = $long === "" ? 4 : $long;
-        $this->expires = $expires === "" ? 7200 : $expires;
     }
 
     protected function code() {
