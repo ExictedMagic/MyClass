@@ -16,9 +16,8 @@ class Captcha {
     protected $font; //字体路径
     protected $size; //字体大小
     protected $long; //验证码的长度
-    protected $expires; //session的生存时间
 
-    public function __construct($width = 60, $height = 22, $font = "", $size = 5, $long = 4, $expires = 7200) {
+    public function __construct($width = 60, $height = 22, $font = "", $size = 5, $long = 4) {
         $this->width = $width;
         $this->height = $height;
         $this->font = $font;
