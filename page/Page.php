@@ -12,7 +12,7 @@
  *  'next'  => '<a href="%url%">下一页</a>',//下一页样式
  *  );
  *  $page = new Page(3, $page_template, array("a" => "1", "b" => 2));
- *  echo $page->create($this->_page);
+ *  echo $page->create($current_page);
  */
 class Page {
     //当前页码
@@ -30,21 +30,29 @@ class Page {
     //分页的html模版
     protected $template;
 
-    public function __construct($total, $template = array(), $url_array = array(), $page_size = 5, $per_page = 1) {
+    public function __construct($total, $template = array(), $url_array = array(), $page_size = 5, $per_page = 5) {
         $this->page = 1;
         $this->total = $total;
         $this->page_size = $page_size;
         $this->per_page = $per_page;
         $this->total_page = intval(ceil($total / $per_page));
         $this->url_array = $url_array;
-        $this->template = $template;
+        //定义默认的样式
+        $page_template = array(
+            'blur'  => '<a href="%url%">%page% </a>', //非当前页样式
+            'focus' => '<span>%page% </span>', //当前页样式
+            'prev'  => '<a href="%url%">上一页 </a>', //上一页样式
+            'next'  => '<a href="%url%"> 下一页</a>', //下一页样式
+        );
+        $this->template = empty($template) ? $page_template : $template;
     }
 
     public function create($page) {
-        $this->page = $page;
+        $this->page = $page <= $this->total_page ? $page : $this->total_page;//超过总页数，则定位在最后一页
         $page_half = intval($this->page_size / 2);
-        $page_start = $this->page <= $this->total_page ? max(1, $this->page - $page_half) : 1;
+        $page_start = $this->page <= $this->total_page && $this->total_page > 5 ? max(1, $this->page - $page_half) : 1;
         $page_end =min($page_start + $this->page_size - 1, $this->total_page);
+        $page_start = $page_end == $this->total_page ? $page_end - $this->page_size + 1: $page_start;
         return $this->pageHtml($page_start, $page_end);
     }
 
@@ -52,11 +60,19 @@ class Page {
         $page_array = range($page_start, $paga_end);
         $page_html = "";
         $url_str = empty($this->url_array) ? "?page=" : "?" . http_build_query($this->url_array) . "&page=";
-        if (!empty($page_array)) {
+        if (!empty($page_array) && $this->total_page > 1) {
             $this->page = $this->total_page >= $this->page ? $this->page : 1;
             //上一页
             $prev_url = $url_str . ($this->page - 1);
+
             $page_html .= $this->page > 1 && isset($this->template['prev']) ? str_replace("%url%", $prev_url, $this->template['prev']) : "";
+
+            //判断显示1...
+            if ($page_start >= 2) {
+                $url = $url_str . 1;
+                $page_html .= isset($this->template['blur']) ? str_replace(array("%url%", "%page%"), array($url, 1), $this->template['blur']) : "";
+                $page_html .= isset($this->template['focus']) ? str_replace("%page%", "...", $this->template['focus']) : "";
+            }
             foreach ($page_array as $p) {
                 if ($this->page == $p) {
                     $page_html .= isset($this->template['focus']) ? str_replace("%page%", $p, $this->template['focus']) : "";
@@ -64,6 +80,12 @@ class Page {
                     $url = $url_str . $p;
                     $page_html .= isset($this->template['blur']) ? str_replace(array("%url%", "%page%"), array($url, $p), $this->template['blur']) : "";
                 }
+            }
+            //判断显示...100
+            if ($paga_end < $this->total_page) {
+                $url = $url_str . $this->total_page;
+                $page_html .= isset($this->template['focus']) ? str_replace("%page%", "...", $this->template['focus']) : "";
+                $page_html .= isset($this->template['blur']) ? str_replace(array("%url%", "%page%"), array($url, $this->total_page), $this->template['blur']) : "";
             }
             //下一页
             $next_url = $url_str . ($this->page + 1);
