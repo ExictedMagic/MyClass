@@ -10,6 +10,7 @@
  *  'focus' => '<span>%page%</span>',//当前页样式
  *  'prev'  => '<a href="%url%">上一页</a>',//上一页样式
  *  'next'  => '<a href="%url%">下一页</a>',//下一页样式
+ *  'dian'  => '<span>...</span>'//...样式，可省略
  *  );
  *  $page = new Page(3, $page_template, array("a" => "1", "b" => 2));
  *  echo $page->create($current_page);
@@ -48,11 +49,11 @@ class Page {
     }
 
     public function create($page) {
-        $this->page = $page <= $this->total_page ? $page : $this->total_page;//超过总页数，则定位在最后一页
+        $this->page = $page <= $this->total_page ? $page : $this->total_page; //超过总页数，则定位在最后一页
         $page_half = intval($this->page_size / 2);
         $page_start = $this->page <= $this->total_page && $this->total_page > 5 ? max(1, $this->page - $page_half) : 1;
-        $page_end =min($page_start + $this->page_size - 1, $this->total_page);
-        $page_start = $page_end == $this->total_page ? $page_end - $this->page_size + 1: $page_start;
+        $page_end = min($page_start + $this->page_size - 1, $this->total_page);
+        $page_start = $page_end == $this->total_page ? $page_end - $this->page_size + 1 : $page_start;
         return $this->pageHtml($page_start, $page_end);
     }
 
@@ -68,10 +69,10 @@ class Page {
             $page_html .= $this->page > 1 && isset($this->template['prev']) ? str_replace("%url%", $prev_url, $this->template['prev']) : "";
 
             //判断显示1...
-            if ($page_start >= 2) {
+            if ($page_start >= 2 && isset($this->template['dian'])) {
                 $url = $url_str . 1;
                 $page_html .= isset($this->template['blur']) ? str_replace(array("%url%", "%page%"), array($url, 1), $this->template['blur']) : "";
-                $page_html .= isset($this->template['focus']) ? str_replace("%page%", "...", $this->template['focus']) : "";
+                $page_html .= isset($this->template['dian']) ? $this->template['dian'] : "";
             }
             foreach ($page_array as $p) {
                 if ($this->page == $p) {
@@ -82,9 +83,9 @@ class Page {
                 }
             }
             //判断显示...100
-            if ($paga_end < $this->total_page) {
+            if ($paga_end < $this->total_page && isset($this->template['dian'])) {
                 $url = $url_str . $this->total_page;
-                $page_html .= isset($this->template['focus']) ? str_replace("%page%", "...", $this->template['focus']) : "";
+                $page_html .= isset($this->template['dian']) ? $this->template['dian'] : "";
                 $page_html .= isset($this->template['blur']) ? str_replace(array("%url%", "%page%"), array($url, $this->total_page), $this->template['blur']) : "";
             }
             //下一页
