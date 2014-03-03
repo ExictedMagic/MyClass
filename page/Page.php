@@ -1,4 +1,5 @@
 <?php
+
 /**
  * User: pmsun
  * Date: 13-12-16
@@ -51,9 +52,9 @@ class Page {
     public function create($page) {
         $this->page = $page <= $this->total_page ? $page : $this->total_page; //超过总页数，则定位在最后一页
         $page_half = intval($this->page_size / 2);
-        $page_start = $this->page <= $this->total_page && $this->total_page > 5 ? max(1, $this->page - $page_half) : 1;
+        $page_start = $this->page <= $this->total_page && $this->total_page > $this->page_size ? max(1, $this->page - $page_half) : 1;
         $page_end = min($page_start + $this->page_size - 1, $this->total_page);
-        $page_start = $page_end == $this->total_page ? $page_end - $this->page_size + 1 : $page_start;
+        $page_start = $page_end == $this->total_page && $this->total_page > $this->page_size ? $page_end - $this->page_size + 1 : $page_start;
         return $this->pageHtml($page_start, $page_end);
     }
 
