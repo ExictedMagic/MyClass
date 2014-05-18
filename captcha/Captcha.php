@@ -76,7 +76,7 @@ class Captcha {
 
         //计算中心位置
         $x = intval(($xi - $xr) / 2);
-        $y = intval(($yi - $yi) / 2);
+        $y = intval(($yi - $yr) / 2);
         return array($x, $y);
     }
 }
