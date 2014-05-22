@@ -245,6 +245,3 @@ class Db_mysql {
         return $this->exec($sql);
     }
 }
-
-$db = new Db_mysql(array('host' => '127.0.0.1', 'username' => 'root', 'password' => '', 'database' => 'bayuanbao', 'pconnect' => false, 'charset' => 'UTF8'));
-var_dump($db->select("id")->table("byb_user")->where(array("account" => '包大人', 'passwd' => md5('1234567')))->find_all());
