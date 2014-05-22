@@ -5,6 +5,30 @@
  * Date: 14-5-20
  * Time: 上午12:44
  * @desc 数据库操作类，使用mysql拓展
+ * @Usage
+ * $config = array(
+ *      'host' => 'localhost',
+ *      ‘port’ => 3306,     //数据库端口号
+ *      'username' => 'xxx',    //数据库用户名
+ *      'password' => '',       //数据库密码
+ *      'database' => 'xxx',    //数据库名
+ *      'pconnect' => true/false,  //是否开启长连接
+ *      ‘charset’  => 'UTF8',   //设置编码
+ * );
+ * $db = new Db_mysql($config);
+ * //执行sql语句
+ * $sql = "select `field` from `table`";
+ * $db->query($sql)
+ * //链式查询
+ * $db->select('filed')->table()->where('')->find_all()
+ * //插入数据
+ * $db->insert(array('xxx' => 1, 'xxx' => 2))
+ * //更新数据
+ * $db->update();   //默认使用主键id来作为where条件
+ * $db->where()->update();
+ * //删除
+ * $db->where()->del();
+ * $db->del('id = 1');
  */
 class Db_mysql {
     //数据库连接
@@ -125,7 +149,16 @@ class Db_mysql {
         $this->db || $this->db = self::instance($this->_config);
         $opt = $this->_options($opt);
         $sql = "select {$opt['select']} from `{$opt['table']}` ";
-        !empty($opt['where']) && $sql .= 'where ' . $opt['where'];
+        if (!empty($opt['where'])) {
+            if (is_array($opt['where'])) {
+                foreach ($opt['where'] as $k => $val) {
+                    $sql .= " and `{$k}` = '{$val}' ";
+                }
+                $sql = preg_replace('/and/','where',$sql,1);
+            } else {
+                $sql .= 'where ' . $opt['where'];
+            }
+        }
         !empty($opt['having']) && $sql .= 'having ' . $opt['having'];
         !empty($opt['order']) && $sql .= 'order by ' . $opt['order_by'];
         !empty($opt['distinct']) && $sql .= 'distinct ' . $opt['distinct'];
@@ -212,3 +245,6 @@ class Db_mysql {
         return $this->exec($sql);
     }
 }
+
+$db = new Db_mysql(array('host' => '127.0.0.1', 'username' => 'root', 'password' => '', 'database' => 'bayuanbao', 'pconnect' => false, 'charset' => 'UTF8'));
+var_dump($db->select("id")->table("byb_user")->where(array("account" => '包大人', 'passwd' => md5('1234567')))->find_all());
