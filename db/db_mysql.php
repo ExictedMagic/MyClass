@@ -8,12 +8,13 @@
  * @Usage
  * $config = array(
  *      'host' => 'localhost',
- *      ‘port’ => 3306,     //数据库端口号
+ *      'port' => 3306,     //数据库端口号
  *      'username' => 'xxx',    //数据库用户名
  *      'password' => '',       //数据库密码
  *      'database' => 'xxx',    //数据库名
  *      'pconnect' => true/false,  //是否开启长连接
- *      ‘charset’  => 'UTF8',   //设置编码
+ *      'charset'  => 'UTF8',   //设置编码
+ *      'dbprefix' => 'xx_' //表前缀
  * );
  * $db = new Db_mysql($config);
  * //执行sql语句
@@ -58,6 +59,7 @@ class Db_mysql {
     public function __construct($config = array()) {
         $this->_config = $config;
         $this->table || $this->table = strtolower(substr(get_class($this), 0, -5));
+        empty($this->_config['dbprefix']) || $this->table = $this->_config['dbprefix'] . $this->table;
     }
 
     static function instance($db_config) {
@@ -137,6 +139,7 @@ class Db_mysql {
         $opt = array_merge($this->options, $opt);
 
         empty($opt['table']) && $opt['table'] = $this->table;
+        empty($this->_config['dbprefix']) || $opt['table'] = $this->_config['dbprefix'] . $opt['table'];
         empty($opt['select']) && $opt['select'] = '*';
         return $opt;
 
@@ -164,6 +167,7 @@ class Db_mysql {
         !empty($opt['distinct']) && $sql .= 'distinct ' . $opt['distinct'];
         !empty($opt['group']) && $sql .= 'group by ' . $opt['group'];
         !empty($opt['limit']) && $sql .= 'limit ' . $opt['limit'];
+        echo $sql;exit;
         return $this->query($sql);
     }
 
