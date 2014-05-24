@@ -167,7 +167,6 @@ class Db_mysql {
         !empty($opt['distinct']) && $sql .= 'distinct ' . $opt['distinct'];
         !empty($opt['group']) && $sql .= 'group by ' . $opt['group'];
         !empty($opt['limit']) && $sql .= 'limit ' . $opt['limit'];
-        echo $sql;exit;
         return $this->query($sql);
     }
 
