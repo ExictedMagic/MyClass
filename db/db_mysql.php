@@ -15,6 +15,8 @@
  *      'pconnect' => true/false,  //是否开启长连接
  *      'charset'  => 'UTF8',   //设置编码
  *      'dbprefix' => 'xx_' //表前缀
+ *      'cache'    => false,
+ *      'cache_path' => '',
  * );
  * $db = new Db_mysql($config);
  * //执行sql语句
@@ -31,6 +33,9 @@
  * $db->where()->del();
  * $db->del('id = 1');
  */
+
+namespace mysql;
+
 class Db_mysql {
     //数据库连接
     public $db;
@@ -100,13 +105,18 @@ class Db_mysql {
      * 执行sql返回数据
      */
     public function query($sql) {
-        $this->db || $this->db = self::instance($this->_config);
-        if (!$query = mysql_query($sql)) {
-            exit(mysql_error($this->db));
-        }
-        $data = array();
-        while ($row = mysql_fetch_assoc($query)){
-            $data[] = $row;
+        if ($this->_config['cache'] && file_exists($this->_config['cache_path'] . DIRECTORY_SEPARATOR . md5($sql))) {
+            return $this->readCache($this->_config['cache_path'] . DIRECTORY_SEPARATOR . md5($sql));
+        } else {
+            $this->db || $this->db = self::instance($this->_config);
+            if (!$query = mysql_query($sql)) {
+                exit(mysql_error($this->db));
+            }
+            $data = array();
+            while ($row = mysql_fetch_assoc($query)) {
+                $data[] = $row;
+            }
+            $this->writeCache(md5($sql), $data);
         }
         return $data;
     }
@@ -197,11 +207,16 @@ class Db_mysql {
      */
     public function getFiled($table = "") {
         $table || $table = $this->table;
-        $fields = array();
-        if ($query = $this->exec("show full fields from `{$table}`")) {
-            while ($row = mysql_fetch_assoc($query)){
-                $fields[] = $row['Field'];
+        if ($this->_config['cache'] && file_exists($this->_config['cache_path'] . DIRECTORY_SEPARATOR . md5($table))) {
+            return $this->readCache($this->_config['cache_path'] . DIRECTORY_SEPARATOR . md5($table));
+        } else {
+            $fields = array();
+            if ($query = $this->exec("show full fields from `{$table}`")) {
+                while ($row = mysql_fetch_assoc($query)) {
+                    $fields[] = $row['Field'];
+                }
             }
+            $this->writeCache(md5($table), $fields);
         }
         return $fields;
     }
@@ -246,5 +261,34 @@ class Db_mysql {
         $opt = $this->_options($opt);
         $sql = "delete from `{$this->table}` where " . $opt['where'];
         return $this->exec($sql);
+    }
+
+    /**
+     * 设置缓存
+     */
+    private function writeCache($filename, $data) {
+        $path = $this->_config['cache_path'] . DIRECTORY_SEPARATOR . $filename;
+        if (file_exists($this->_config['cache_path'])) {
+            return file_put_contents($path, serialize($data));
+        } else {
+            //创建目录
+            if (!@mkdir($this->_config['cache_path'], 0777)) {
+                return FALSE;
+            }
+
+            @chmod($this->_config['cache_path'], 0777);
+            return file_put_contents($path, serialize($data));
+        }
+        return false;
+    }
+
+    /**
+     * 读取缓存
+     */
+    private function readCache($cache_path) {
+        if (file_exists($cache_path)) {
+            return unserialize(file_get_contents($cache_path));
+        }
+        return false;
     }
 }
